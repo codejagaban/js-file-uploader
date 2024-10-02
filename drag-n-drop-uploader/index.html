@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+  </head>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    img {
+      margin-top: 20px;
+      max-width: 100%;
+    }
+
+    p {
+      margin-top: 20px;
+    }
+
+    .error {
+      color: #ff0000;
+    }
+
+    .success {
+      color: #008000;
+    }
+    #drop-area {
+      border: 2px dashed #ccc;
+      border-radius: 5px;
+      width: 300px;
+      height: 150px;
+      line-height: 150px;
+      text-align: center;
+      cursor: pointer;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    #drop-area.drag-over {
+      background-color: #ebf0fe;
+      color: #007bff;
+    }
+  </style>
+
+  <body>
+    <h1> File Uploader</h1>
+    <form id="uploadForm">
+      <div id="drop-area">Drop files here to upload</div>
+      <input type="file" name="file" id="fileInput" accept="image/*" hidden>
+
+    </form>
+    <p id="message"></p>
+    <img src="" alt="" id="preview" width="300">
+
+    <script>
+      const form = document.getElementById('uploadForm');
+      const fileInput = document.getElementById('fileInput');
+      const preview = document.getElementById('preview');
+      const message = document.getElementById('message');
+      const dropArea = document.getElementById('drop-area');
+
+      function preventDefaults(e) {
+        e.preventDefault();
+      }
+      dropArea.addEventListener('dragover', preventDefaults);
+      dropArea.addEventListener('dragenter', preventDefaults);
+      dropArea.addEventListener('dragleave', preventDefaults);
+
+      dropArea.addEventListener('dragenter', () => {
+        dropArea.classList.add('drag-over');
+      })
+      dropArea.addEventListener('dragleave', () => {
+        dropArea.classList.remove('drag-over');
+      })
+
+      dropArea.addEventListener('drop', handleDrop)
+
+      dropArea.addEventListener('click', () => {
+        fileInput.click();
+      })
+
+      function handleDrop(e) {
+        dropArea.classList.remove('drag-over');
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        if(files.length){
+          fileInput.files = files;
+          handleFileUpload(files[0])
+        }
+      }
+
+      function handleFileUpload (file) {
+        const maxSize = 2 * 1024 * 1024; // 2 MB
+
+        if (file) {
+          if (file.size > maxSize) {
+            message.textContent = 'File size exceeds the limit of 2 MB.';
+            message.className = 'error';
+            return;
+          } else if(!isValidFileType(file)) {
+            message.textContent = 'File type is not supported'
+            message.className = 'error'
+            return;
+          }
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('UPLOADCARE_PUB_KEY', 'f92c4d6af2a321b57aff');
+          formData.append('filename', file.name);
+
+          message.textContent = 'Uploading file...';
+          message.className = '';
+
+          fetch('https://upload.uploadcare.com/base/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Accept': 'multipart/form-data'
+            }
+          })
+            .then(response => response.json())
+            .then(data => {
+              message.textContent = 'File uploaded successfully!';
+              message.className = 'success';
+              console.log(data);
+              preview.src = `https://ucarecdn.com/${data.file}/${file.name}`;
+              preview.alt = file.name;
+            })
+            .catch(error => {
+              message.textContent = 'Error uploading file.';
+              message.className = 'error';
+              console.error('Error:', error);
+            });
+        } else {
+          message.textContent = 'Please select a file to upload.';
+          message.className = 'error';
+        }
+
+      }
+      function isValidFileType(file) {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
+        return allowedTypes.includes(file.type)
+      }
+    </script>
+  </body>
+
+</html>
