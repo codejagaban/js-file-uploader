@@ -44,6 +44,7 @@
     .success {
       color: #008000;
     }
+
     #drop-area {
       border: 2px dashed #ccc;
       border-radius: 5px;
@@ -55,6 +56,7 @@
       margin: 20px auto;
       padding: 20px;
     }
+
     #drop-area.drag-over {
       background-color: #ebf0fe;
       color: #007bff;
@@ -65,7 +67,7 @@
     <h1> File Uploader</h1>
     <form id="uploadForm">
       <div id="drop-area">Drop files here to upload</div>
-      <input type="file" name="file" id="fileInput" accept="image/*" hidden>
+      <input type="file" name="file" id="fileInput" hidden>
 
     </form>
     <p id="message"></p>
@@ -102,13 +104,13 @@
         dropArea.classList.remove('drag-over');
         e.preventDefault();
         const files = e.dataTransfer.files;
-        if(files.length){
+        if (files.length) {
           fileInput.files = files;
           handleFileUpload(files[0])
         }
       }
 
-      function handleFileUpload (file) {
+      function handleFileUpload(file) {
         const maxSize = 2 * 1024 * 1024; // 2 MB
 
         if (file) {
@@ -116,7 +118,7 @@
             message.textContent = 'File size exceeds the limit of 2 MB.';
             message.className = 'error';
             return;
-          } else if(!isValidFileType(file)) {
+          } else if (!isValidFileType(file)) {
             message.textContent = 'File type is not supported'
             message.className = 'error'
             return;
